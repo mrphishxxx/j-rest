@@ -14,8 +14,6 @@ var Response = require('joule-node-response');
 var Users = require('./users');
 
 exports.handler = function(event, context) {
-	console.log(process.env.DB_NAME);
-	console.log(event);
   var response = new Response()
       , users = new Users()
       , lastAccessedKey = 'lastAccessed'
