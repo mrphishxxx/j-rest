@@ -11,32 +11,61 @@
  *    event.{queryStringParam}, Query string parameters as defined in your .joule.yml
  */
 var Response = require('joule-node-response');
-var JouleNodeDatabase = require('joule-node-database');
+var Users = require('./users');
 
 exports.handler = function(event, context) {
-  var response = new Response();
-  var testDb = new JouleNodeDatabase();
-  var lastAccessedKey = 'lastAccessed';
+  var response = new Response()
+      , users = new Users()
+      , lastAccessedKey = 'lastAccessed'
+      , component = event.path[0] || null;
 
   response.setContext(context);
   response.setHeader('Content-Type', 'application/json');
 
-  // We fetch a key from the database
-  testDb.get(lastAccessedKey)
-    .done(function(data) {
-      // store the last accessed time so we can output it
-      if(data === null) {
-        lastAccessed = 'N/A';
-      } else {
-        lastAccessed = data['lastAccessed'] || 'N/A';
-      }
+  if(!component) {
+    return;
+  }
 
-      // set the last accessed time to the current time
-      testDb.set(lastAccessedKey, {lastAccessed: (new Date()).toString()})
-        .done(function(data) {
-          // create the response object and send it back
-          var result = {message: ' Last accessed at ' + lastAccessed};
-          response.send(result);
-      });
-    });
+  switch(component) {
+    case 'users':
+      if(event.httpMethod === 'GET') {
+        if(typeof(event.path[1]) !== 'undefined') {
+          users.get(event.path[1])
+            .done(function(data) {
+              response.send(data);
+            });
+        } else {
+          response.setHttpStatusCode(400);
+          response.send('cannot get all users');
+        }
+        return;
+      } else if(event.httpMethod === 'POST') {
+        response.setHttpStatusCode(201);
+        users.post(event.post['email'], event.post['username'])
+          .done(function(data) {
+            response.send(data);
+          });
+        return;
+      } else if(event.httpMethod === 'PUT') {
+        if(typeof(event.path[1]) === 'undefined' || !event.path[1]) {
+          response.setHttpStatusCode(404);
+          response.send('User not found');
+        } else {
+          users.post(event.path[1], event.post['username'])
+            .done(function(data) {
+              response.send(data);
+            });
+        }
+        return;
+      } else {
+        response.setHttpStatusCode(400);
+        response.send({message: 'unknown api', event: event});
+        return;
+      }
+      break;
+    default:
+      response.setHttpStatusCode(400);
+      response.send({message: '('+component+') is not a valid component.'});
+      return;
+  }
 };
