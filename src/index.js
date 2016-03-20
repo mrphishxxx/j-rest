@@ -32,6 +32,7 @@ exports.handler = function(event, context) {
         if(typeof(event.path[1]) !== 'undefined') {
           users.get(event.path[1])
             .done(function(data) {
+              data['test'] = 'working';
               response.send(data);
             });
         } else {
