@@ -32,8 +32,12 @@ exports.handler = function(event, context) {
         if(typeof(event.path[1]) !== 'undefined') {
           users.get(event.path[1])
             .done(function(data) {
-              data['test'] = 'working';
-              response.send(data);
+              if(data === null) {
+                response.setHttpStatusCode(404);
+                response.send(null);
+              } else {
+                response.send(data);
+              }
             });
         } else {
           response.setHttpStatusCode(400);
