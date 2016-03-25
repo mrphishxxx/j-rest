@@ -26,10 +26,13 @@
       "/joule/username/users/user@example.com": [
         {}
       ],
+      "/joule/username/users/unknown-user@example.com": [
+        {}
+      ],
       "/joule/username/users": [
         {}
       ],
-      "/joule/username/dne": [
+      "/joule/username/unknown-component": [
         {}
       ]
     },
